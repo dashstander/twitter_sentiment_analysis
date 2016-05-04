@@ -8,7 +8,7 @@ from sklearn.cross_validation import train_test_split
 def xgbCV(dmatrix,  nfolds, eta_list, gamma_list, num_rounds = 500):
 	
 	params = {'eta':'', 'gamma':'', 'objective':'binary:logistic', 'verbose':3,
-				'max_depth':20}
+				'max_depth':20, 'subsample':.75, 'colsample_bytree':.75}
 	
 	vals = {'eta':[], 'gamma':[], 'num_iter':[], 'mean_cv_error':[], 'std_cv_error':[]}
 	
@@ -45,8 +45,8 @@ dtrain = xgb.DMatrix('_data/XGB_Train_DTM')
 dtest = xgb.DMatrix('_data/XGB_Test_DTM')
 
 
-eta_list = np.linspace(.1, .5, 10)
-gamma_list = [4, 5]
+eta_list = np.linspace(.1, .9, 25)
+gamma_list = [4, 5, 6, 7]
 nfolds = 3
 
 cv_df = xgbCV(dtrain, nfolds, eta_list, gamma_list)
