@@ -1,0 +1,600 @@
+#LyX 2.1 created this file. For more info see http://www.lyx.org/
+\lyxformat 474
+\begin_document
+\begin_header
+\textclass article
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_math auto
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Stat 154 Final Project: Twitter Sentiment Analysis
+\end_layout
+
+\begin_layout Author
+Dashiell Stander
+\end_layout
+
+\begin_layout Date
+May 4, 2016
+\end_layout
+
+\begin_layout Section
+Introduction
+\end_layout
+
+\begin_layout Paragraph*
+
+\series medium
+Sentiment analysis is one of the oldest problems in Natural Language Processing
+ (NLP).
+ It has great value both as a purely academic goal as well as numerous applicati
+ons in the private sector.
+ For this project, we were given more than 1.5 million tweets, 140 character
+ strings posted to the social media site Twitter, and tasked with classifying
+ them as expressing a 
+\begin_inset Quotes eld
+\end_inset
+
+positive
+\begin_inset Quotes erd
+\end_inset
+
+ or 
+\begin_inset Quotes eld
+\end_inset
+
+negative
+\begin_inset Quotes erd
+\end_inset
+
+ sentiment, coded as a 1 or a 0, respectively.
+ 
+\end_layout
+
+\begin_layout Section
+Feature Engineering
+\end_layout
+
+\begin_layout Standard
+The data for this project was raw HTML source code, so there was quite a
+ lot of room for new features to be engineered.
+ Indeed, it quickly became apparent that the problem would respond more
+ effectively to clever feature engineering than either model choice or clever
+ thorough parameter tuning.
+\end_layout
+
+\begin_layout Paragraph*
+
+\series medium
+The first step was to make the data readable to the tokenizer.
+ For example, all of the `&lt;3` and `:-*` instances were changed to 'HEART'
+ and 'HAPPYEMOJI'.
+ This allowed me to use scikit-learn's off-the-shelf tokenizer while still
+ aggregating the data in such a way that the model would know that 
+\begin_inset Quotes eld
+\end_inset
+
+:-)
+\begin_inset Quotes erd
+\end_inset
+
+ and 
+\begin_inset Quotes eld
+\end_inset
+
+:)
+\begin_inset Quotes erd
+\end_inset
+
+ are expressing the same sentiment.
+ A partial list of tokens that were aggregated is as follows:
+\end_layout
+
+\begin_layout Itemize
+All 
+\begin_inset Quotes eld
+\end_inset
+
+happy emojis
+\begin_inset Quotes erd
+\end_inset
+
+ with smiling, silly, or kissy faces were replaced as 
+\begin_inset Quotes eld
+\end_inset
+
+happyemoji
+\begin_inset Quotes erd
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Itemize
+All 
+\begin_inset Quotes eld
+\end_inset
+
+sad emojis
+\begin_inset Quotes erd
+\end_inset
+
+ with frowning, dismayed, or grimacing faces were replaced as 
+\begin_inset Quotes eld
+\end_inset
+
+sademoji
+\begin_inset Quotes erd
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Itemize
+All 
+\begin_inset Quotes eld
+\end_inset
+
+@twitter-handle
+\begin_inset Quotes erd
+\end_inset
+
+ style mentions were replaced with 
+\begin_inset Quotes eld
+\end_inset
+
+@MENTION
+\begin_inset Quotes erd
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Paragraph*
+
+\series medium
+The second step was to differentiate between words and their semantic negations.
+ 
+\begin_inset Quotes eld
+\end_inset
+
+I like you
+\begin_inset Quotes erd
+\end_inset
+
+ and 
+\begin_inset Quotes eld
+\end_inset
+
+I don't like you
+\begin_inset Quotes erd
+\end_inset
+
+ are expressing the exact opposite sentiment, despite their similarity according
+ to a naive bag of words model.
+ As such, I 
+\begin_inset Quotes eld
+\end_inset
+
+tagged
+\begin_inset Quotes erd
+\end_inset
+
+ each token between a negation (i.e.
+ 
+\begin_inset Quotes eld
+\end_inset
+
+can't
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+won't
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+not
+\begin_inset Quotes erd
+\end_inset
+
+, etc...) and either the end of the phrase or the tweet, whichever came first,
+ as 
+\begin_inset Quotes eld
+\end_inset
+
+not[token]
+\begin_inset Quotes erd
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Paragraph*
+
+\series medium
+After the raw data had been modified in this way, I used sklearns TfidfVectorize
+r to create a Tfidf-weighted Document-Term-Matrix, selecting the 10,000
+ bigrams with the highest Tfidf scores.
+ This transformed data was what I used to train and test the models.
+\end_layout
+
+\begin_layout Section
+Models
+\end_layout
+
+\begin_layout Subsection
+Context
+\end_layout
+
+\begin_layout Standard
+I tried many models, and ruled out some relatively quickly (kernel SVM because
+ it was too slow) and others later on (linear SVM because it was slightly
+ less effective than Logistic Regression and gave otherwise very similar
+ results).
+ What follows are the details of the two most succesful models.
+ With the exception of XGBoost, all models were the scikit-learn implementations.
+\end_layout
+
+\begin_layout Subsection
+Gradient Boosting
+\end_layout
+
+\begin_layout Standard
+Many models were quickly weeded out due to how slowly they dealt with the
+ massive 1,528,627 x 10,000 matrix that made up the final dataset, but gradient
+ boosting with the XGBoost package dealt with it extremely well and provided
+ a lot of flexibility.
+ To limit the feature space when tuning the hyperparameters, I focused on
+ tuning the learning rate 
+\begin_inset Quotes eld
+\end_inset
+
+eta
+\begin_inset Quotes erd
+\end_inset
+
+, the regularization parameter 
+\begin_inset Quotes eld
+\end_inset
+
+gamma
+\begin_inset Quotes erd
+\end_inset
+
+, the subsample amounts (columns and rows), and the number of boosted trees.
+ I paid special attention to make use of the 
+\begin_inset Quotes eld
+\end_inset
+
+early_stopping_rounds
+\begin_inset Quotes erd
+\end_inset
+
+ feature so that more trees than strictly necessary were never used.
+\end_layout
+
+\begin_layout Subsection
+L2 Logistic Regression
+\end_layout
+
+\begin_layout Standard
+Logistic regression was also very consistently fast and also had fewer hyperpara
+meters to optimize, which made it an attractive option.
+ I looked at the L1 vs.
+ L2 penalty, whether or not to use a weighted prior in training, and the
+ regularization parameter C.
+\end_layout
+
+\begin_layout Section
+Results
+\end_layout
+
+\begin_layout Subsection
+Model Results
+\end_layout
+
+\begin_layout Standard
+All the models were tested with three-fold cross validation.
+ The other models that I tried performed similarly, if not quite as well.
+ One interesting thing not reflected in the following table was that the
+ subsample amounts controlled overfitting much more effectively than gamma.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="3" columns="4">
+<features rotate="0" tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Model
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Parameters
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Error
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+AUC
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+XGB
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+eta: .65, gamma: 5, row subsample: .75, column subsample: .75 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+.2274
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+.827
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Logistic Regression
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+penalty: L2, C: .8
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+.2179
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+.7836
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Paragraph
+
+\series medium
+The discrepancy between Error and AUC is interesting given how closely balanced
+ the classes are in the sample.
+ 
+\end_layout
+
+\begin_layout Subsection
+Unsuccesful Models
+\end_layout
+
+\begin_layout Standard
+In some ways, I learned more from two ideas I had that were unsuccessful--an
+ ensemble voting classifier and a hierarchical model.
+ The ensemble voting classifier used XGBoost, Random Forest, Naive Bayes,
+ Logistic Regression, and Linear SVM in hopes of averaging out the error
+ in all of them.
+\end_layout
+
+\begin_layout Paragraph*
+
+\series medium
+The hierarchical model I implemented after realizing that gradient boosting
+ and Logistic Regression were the most effective models thus far.
+ I had XGBoost pass through the training data and then split up the dataset
+ into those that XGBoost classified as 1 and those it classified as 0 (each
+ unbalanced, with about 77% actually being ones or zeros).
+ Then I fit a logistic regression model to each one, given the prior of
+ the unbalanced classes.
+\end_layout
+
+\begin_layout Paragraph
+
+\series medium
+Neither of these models, however, worked at all better than the simple gradient
+ boosting or logistic regression models.
+ In fact, the hierarchical model performed quite a bit worse (around 66%
+ accuracy).
+\end_layout
+
+\begin_layout Section
+Conclusion
+\end_layout
+
+\begin_layout Standard
+There are two big takeaways from this project: feature engineering works
+ and some problems can be quite intractable.
+\end_layout
+
+\begin_layout Paragraph
+
+\series medium
+Despite extensive computer time spent tuning hyperparameters, it never made
+ a difference of more than one percentage point.
+ The larger gains came from using feature engineering to emphasize the truly
+ information-rich features of the data.
+\end_layout
+
+\begin_layout Paragraph
+
+\series medium
+I say that some problems are intractable is because, while I had some hope
+ that there were some features in the dataset that, if I were just clever
+ enough, I could get my models to home in on.
+ This turned out not to be the case.
+ That the ensemble classifier showed no improvement over the best of the
+ single models indicates that each model was misclassifying, more or less,
+ the same tweets.
+ There was no gain to be had from averaging because all the averages were
+ about the same.
+ Similarly, I thought that there might be some unifying characteristics
+ of the tweets that got misclassified that logistic regression may have
+ been able to pick up on if it was focused on just those datapoints.
+ This also, however, proved not to be true.
+ Improvements could be made on telling the difference between correctly
+ classified and misclassified data points in the training set, but this
+ proved to entirely come from overfitting and only worsened performance
+ on the test set.
+ This indicates that there were no systematic features to the tweets that
+ were misclassified, only noise to be found in individual training sets.
+\end_layout
+
+\begin_layout Paragraph
+
+\series medium
+Which is not to say that this problem and the correct classification of
+ those tweets is entirely intractable, but that I could not do it within
+ the scope of this project.
+ Further explorations into following Hoang Duong's example and using the
+ results of different models as the inputs into a neural net would be my
+ first step if I were to continue this project.
+ The second would be used more sophisticated feature selection--perhaps
+ inititally choosing 20,000 or 30,000 features and then using correlation
+ of F1 score to narrow them down instead of just raw Tfidf.
+\end_layout
+
+\end_body
+\end_document
